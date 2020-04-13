@@ -1,6 +1,6 @@
 Summary: Additional storage drivers for sm
 Name:    sm-additional-drivers
-Version: 0.3.0
+Version: 0.4.0
 Release: 1%{?dist}
 License: LGPLv2
 URL: https://github.com/xcp-ng/sm-additional-drivers
@@ -10,6 +10,7 @@ BuildRequires: python
 Requires: sm
 Requires: xapi-core
 Requires: xfsprogs
+Requires: ceph-common
 
 %description
 This package contains additional storage drivers for sm
@@ -23,9 +24,11 @@ This package contains additional storage drivers for sm
 install -d -m 0755 %{buildroot}/opt/xensource/sm
 install -m 0755 EXT4SR.py %{buildroot}/opt/xensource/sm
 install -m 0755 XFSSR.py %{buildroot}/opt/xensource/sm
+install -m 0755 CEPHFSSR.py %{buildroot}/opt/xensource/sm
 pushd %{buildroot}/opt/xensource/sm
 ln -s EXT4SR.py EXT4SR
 ln -s XFSSR.py XFSSR
+ln -s CEPHFSSR.py CEPHFSSR
 popd
 
 install -d -m 0755 %{buildroot}/etc/xapi.conf.d
@@ -37,7 +40,7 @@ WHITELIST_ORIG=$(grep /etc/xapi.conf -e "^sm-plugins=")
 cat << EOF > /etc/xapi.conf.d/sm-additional-drivers.conf
 # This overrides sm-plugins from xapi.conf to take additional storage drivers into account.
 # This file is re-created each time either xapi-core or sm-additional-drivers is updated.
-$WHITELIST_ORIG ext4 xfs
+$WHITELIST_ORIG ext4 xfs cephfs
 EOF
 
 %postun
@@ -58,11 +61,18 @@ fi
 /opt/xensource/sm/XFSSR.py
 /opt/xensource/sm/XFSSR.pyc
 /opt/xensource/sm/XFSSR.pyo
+/opt/xensource/sm/CEPHFSSR
+/opt/xensource/sm/CEPHFSSR.py
+/opt/xensource/sm/CEPHFSSR.pyc
+/opt/xensource/sm/CEPHFSSR.pyo
 # empty config file because it is written by scripts
 # just listing it here to say we own it
 %config /etc/xapi.conf.d/sm-additional-drivers.conf
 
 %changelog
+* Mon Apr 13 2020 Rushikesh Jadhav <rushikesh7@gmail.com> - 0.4.0-1
+- Add experimental CEPH FS storage driver
+
 * Thu Feb 20 2020 Samuel Verschelde <stormi-xcp@ylix.fr> - 0.3.0-1
 - EXTSR now defaults to ext4 so EXT4SR is now deprecated
 - Raise an exception if someone attempts to create a SR with type ext4
